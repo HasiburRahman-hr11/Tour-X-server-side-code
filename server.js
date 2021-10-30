@@ -123,7 +123,10 @@ async function run() {
         // Create New Booking
         app.post('/api/orders/add', async (req, res) => {
             try {
-                const createdOrder = await ordersCollection.insertOne(req.body);
+                const createdOrder = await ordersCollection.insertOne({
+                    ...req.body,
+                    status:'pending'
+                });
                 const newOrder = await ordersCollection.findOne({ _id: createdOrder.insertedId });
 
                 res.status(201).json(newOrder);
