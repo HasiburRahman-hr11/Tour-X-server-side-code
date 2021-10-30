@@ -86,12 +86,32 @@ async function run() {
         });
 
 
+
+        // Update a Package
+        app.put('/api/packages/:id', async (req, res) => {
+            const { id } = req.params;
+            try {
+                await packagesCollection.updateOne(
+                    { _id: ObjectId(id) },
+                    { $set: req.body },
+                    { upsert: true }
+                );
+
+                const order = await packagesCollection.findOne({ _id: ObjectId(id) })
+                res.status(200).json(order);
+            } catch (error) {
+                console.log(error);
+                res.status(500).json(error);
+            }
+        })
+
+
         // Get All Packages
         app.get('/api/packages', async (req, res) => {
             try {
 
-                const cursor = packagesCollection.find();
-                const packages = await cursor.toArray()
+                const cursor = packagesCollection.find().sort({ title: 1 });
+                const packages = await cursor.toArray();
                 res.status(200).json(packages);
 
             } catch (error) {
@@ -120,12 +140,34 @@ async function run() {
         });
 
 
+        // Delete Package by Id
+        app.delete('/api/packages/:id', async (req, res) => {
+            const { id } = req.params;
+            try {
+
+                const result = await packagesCollection.deleteOne({ _id: ObjectId(id) });
+                if (result.deletedCount === 1) {
+                    res.status(200).json({ success: true })
+                } else {
+                    res.status(200).json({ success: false })
+                }
+
+            } catch (error) {
+                console.log(error);
+                res.status(500).json(error);
+            }
+        });
+
+
+        /*---------------- Orders Api -------------- */
+
         // Create New Order
         app.post('/api/orders/add', async (req, res) => {
             try {
                 const createdOrder = await ordersCollection.insertOne({
                     ...req.body,
-                    status: 'pending'
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
                 });
                 const newOrder = await ordersCollection.findOne({ _id: createdOrder.insertedId });
 
