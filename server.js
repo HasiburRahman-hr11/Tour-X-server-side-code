@@ -120,12 +120,12 @@ async function run() {
         });
 
 
-        // Create New Booking
+        // Create New Order
         app.post('/api/orders/add', async (req, res) => {
             try {
                 const createdOrder = await ordersCollection.insertOne({
                     ...req.body,
-                    status:'pending'
+                    status: 'pending'
                 });
                 const newOrder = await ordersCollection.findOne({ _id: createdOrder.insertedId });
 
@@ -137,13 +137,14 @@ async function run() {
             }
         });
 
+
+
         // Get Orders by userId
-        app.get('/api/orders/:userId', async (req, res) => {
+        app.get('/api/orders/user/:userId', async (req, res) => {
             const { userId } = req.params;
             try {
                 const cursor = ordersCollection.find({
-                    userId
-                        : userId
+                    userId: userId
                 });
                 const orders = await cursor.toArray();
 
@@ -153,6 +154,21 @@ async function run() {
                 res.status(500).json(error);
             }
         });
+
+
+        // Get Single Order
+        app.get('/api/orders/:id', async (req, res) => {
+            const { id } = req.params;
+            try {
+                const order = await ordersCollection.findOne({
+                    _id: ObjectId(id)
+                });
+                res.status(200).json(order);
+            } catch (error) {
+                console.log(error);
+                res.status(500).json(error);
+            }
+        })
 
 
         // Get All Orders
@@ -167,11 +183,14 @@ async function run() {
             }
         });
 
+
+
+
         // Delete Order by Id
         app.delete('/api/orders/:orderId', async (req, res) => {
             const { orderId } = req.params;
             try {
-                
+
                 const result = await ordersCollection.deleteOne({ _id: ObjectId(orderId) });
                 if (result.deletedCount === 1) {
                     res.status(200).json({ success: true })
@@ -179,6 +198,25 @@ async function run() {
                     res.status(200).json({ success: false })
                 }
 
+            } catch (error) {
+                console.log(error);
+                res.status(500).json(error);
+            }
+        });
+
+
+        // Update an Order
+        app.put('/api/orders/:id', async (req, res) => {
+            const { id } = req.params;
+            try {
+                await ordersCollection.updateOne(
+                    { _id: ObjectId(id) },
+                    { $set: req.body },
+                    { upsert: true }
+                );
+
+                const order = await ordersCollection.findOne({ _id: ObjectId(id) })
+                res.status(200).json(order);
             } catch (error) {
                 console.log(error);
                 res.status(500).json(error);
