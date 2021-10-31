@@ -63,6 +63,8 @@ async function run() {
         });
 
 
+          /*---------------- Packages Api -------------- */
+
         // Add New Package
         app.post('/api/packages/add', async (req, res) => {
             const { title, description, thumbnail, price, location, duration } = req.body;
@@ -110,7 +112,7 @@ async function run() {
         app.get('/api/packages', async (req, res) => {
             try {
 
-                const cursor = packagesCollection.find().sort({ title: 1 });
+                const cursor = packagesCollection.find().sort({$natural: -1 });
                 const packages = await cursor.toArray();
                 res.status(200).json(packages);
 
