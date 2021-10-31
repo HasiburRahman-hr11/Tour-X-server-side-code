@@ -28,7 +28,7 @@ async function run() {
         await client.connect();
         console.log('Database Connected Successfully');
 
-        // Database
+        // Create Database
         const database = client.db("assignment_11")
 
         // Collections
